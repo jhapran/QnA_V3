@@ -1,0 +1,134 @@
+{
+  "tables": [
+    {
+      "name": "roles",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "name": { "type": "VARCHAR(50)", "unique": true, "not_null": true }
+      }
+    },
+    {
+      "name": "users",
+      "columns": {
+        "id": { "type": "UUID", "primary_key": true, "default": "gen_random_uuid()" },
+        "name": { "type": "VARCHAR(100)", "not_null": true },
+        "email": { "type": "VARCHAR(100)", "unique": true, "not_null": true },
+        "password_hash": { "type": "VARCHAR(255)", "not_null": true },
+        "role_id": { "type": "INT", "foreign_key": "roles.id" },
+        "created_at": { "type": "TIMESTAMP", "default": "NOW()" }
+      }
+    },
+    {
+      "name": "subjects",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "name": { "type": "VARCHAR(100)", "unique": true, "not_null": true }
+      }
+    },
+    {
+      "name": "topics",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "name": { "type": "VARCHAR(100)", "not_null": true },
+        "subject_id": { "type": "INT", "foreign_key": "subjects.id" },
+        "parent_topic_id": { "type": "INT", "foreign_key": "topics.id", "nullable": true }
+      }
+    },
+    {
+      "name": "questions",
+      "columns": {
+        "id": { "type": "UUID", "primary_key": true, "default": "gen_random_uuid()" },
+        "content": { "type": "TEXT", "not_null": true },
+        "type": { "type": "VARCHAR(50)", "not_null": true },
+        "difficulty_level": { "type": "VARCHAR(20)", "nullable": true },
+        "subject_id": { "type": "INT", "foreign_key": "subjects.id" },
+        "topic_id": { "type": "INT", "foreign_key": "topics.id" },
+        "created_by": { "type": "UUID", "foreign_key": "users.id" },
+        "created_at": { "type": "TIMESTAMP", "default": "NOW()" }
+      }
+    },
+    {
+      "name": "choices",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "question_id": { "type": "UUID", "foreign_key": "questions.id" },
+        "content": { "type": "TEXT", "not_null": true },
+        "is_correct": { "type": "BOOLEAN", "default": false }
+      }
+    },
+    {
+      "name": "assessments",
+      "columns": {
+        "id": { "type": "UUID", "primary_key": true, "default": "gen_random_uuid()" },
+        "name": { "type": "VARCHAR(100)", "not_null": true },
+        "description": { "type": "TEXT", "nullable": true },
+        "educator_id": { "type": "UUID", "foreign_key": "users.id" },
+        "created_at": { "type": "TIMESTAMP", "default": "NOW()" },
+        "scheduled_date": { "type": "TIMESTAMP", "nullable": true }
+      }
+    },
+    {
+      "name": "assessment_questions",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "assessment_id": { "type": "UUID", "foreign_key": "assessments.id" },
+        "question_id": { "type": "UUID", "foreign_key": "questions.id" }
+      }
+    },
+    {
+      "name": "responses",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "assessment_id": { "type": "UUID", "foreign_key": "assessments.id" },
+        "question_id": { "type": "UUID", "foreign_key": "questions.id" },
+        "student_id": { "type": "UUID", "foreign_key": "users.id" },
+        "selected_choice_id": { "type": "INT", "foreign_key": "choices.id", "nullable": true },
+        "subjective_answer": { "type": "TEXT", "nullable": true },
+        "is_correct": { "type": "BOOLEAN", "nullable": true },
+        "created_at": { "type": "TIMESTAMP", "default": "NOW()" }
+      }
+    },
+    {
+      "name": "feedback",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "question_id": { "type": "UUID", "foreign_key": "questions.id" },
+        "user_id": { "type": "UUID", "foreign_key": "users.id" },
+        "comment": { "type": "TEXT", "nullable": true },
+        "rating": { "type": "INT", "check": "rating BETWEEN 1 AND 5" },
+        "created_at": { "type": "TIMESTAMP", "default": "NOW()" }
+      }
+    },
+    {
+      "name": "performance_metrics",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "student_id": { "type": "UUID", "foreign_key": "users.id" },
+        "assessment_id": { "type": "UUID", "foreign_key": "assessments.id" },
+        "total_score": { "type": "INT", "not_null": true },
+        "max_score": { "type": "INT", "not_null": true },
+        "percentage": { "type": "FLOAT", "not_null": true },
+        "created_at": { "type": "TIMESTAMP", "default": "NOW()" }
+      }
+    },
+    {
+      "name": "notifications",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "recipient_id": { "type": "UUID", "foreign_key": "users.id" },
+        "message": { "type": "TEXT", "not_null": true },
+        "is_read": { "type": "BOOLEAN", "default": false },
+        "created_at": { "type": "TIMESTAMP", "default": "NOW()" }
+      }
+    },
+    {
+      "name": "question_translations",
+      "columns": {
+        "id": { "type": "SERIAL", "primary_key": true },
+        "question_id": { "type": "UUID", "foreign_key": "questions.id" },
+        "language_code": { "type": "VARCHAR(10)", "not_null": true },
+        "translated_content": { "type": "TEXT", "not_null": true }
+      }
+    }
+  ]
+}
